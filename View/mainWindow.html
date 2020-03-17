@@ -12,26 +12,47 @@
     <title>AGS Deploy</title>
   </head>
   <body>
-    <h1 class="text-center my-3">Bienvenue sur AGS Deploy</h1>
+    <div class="container">
+      <h1 class="text-center my-3">Bienvenue sur AGS Deploy</h1>
 
-    <form method="GET">
-      <div>
-        <table id="listMachine" class="table"></table>
+      <div class="container h-100">
+        <form method="GET">
+          <div class="mt-5">
+            <table id="listMachine" class="table"></table>
+          </div>
+          <div class="row justify-content-center ml-4">
+            <button
+              class="btn btn-danger col-md-4"
+              id="pingSwitch"
+              type="button"
+              onclick="stopPing()"
+            >
+              Pinging OFF
+            </button>
+
+            <button class="btn btn-primary mx-5 col-md-4">Déployer</button>
+          </div>
+        </form>
       </div>
-      <br />
-      <button
-        class="btn btn-danger"
-        id="pingSwitch"
-        type="button"
-        onclick="stopPing()"
-      >
-        Pinging OFF
-      </button>
-
-      <br /><br />
-
-      <button class="btn btn-primary mx-5">Déployer</button>
-    </form>
+    </div>
+    <script>
+      window.$ = window.jQuery = require('jquery');
+    </script>
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+      integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+      integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+      crossorigin="anonymous"
+    ></script>
   </body>
   <script>
     /************************************************     CONSTANTES ET VARIABLES   *********************************************/
@@ -78,7 +99,7 @@
       cell2.innerHTML =
         "<img class='theImage' id='img_reso" +
         countMachine +
-        "' src='../Assets/Images/Load.gif' alt='icon' widdth='20' height='20'>";
+        "' src='../Assets/Images/newload.svg' alt='icon' widdth='20' height='20'>";
       cell3.innerHTML = "<input type='checkbox'>";
       countMachine++;
     });
@@ -93,17 +114,17 @@
       var bouton = document.getElementById('pingSwitch');
       if (shouldIPing == true) {
         shouldIPing = false;
-        bouton.className = 'btn btn-success';
+        bouton.className = 'btn btn-success col-md-4';
         bouton.textContent = 'Pinging ON';
         setTimeout(function() {
           var Images = document.getElementsByClassName('theImage');
           for (var i = 0; i < Images.length; i++) {
-            Images[i].src = '../Assets/Images/Load.gif';
+            Images[i].src = '../Assets/Images/newload.svg';
           }
         }, 1600);
       } else {
         shouldIPing = true;
-        bouton.className = 'btn btn-danger';
+        bouton.className = 'btn btn-danger col-md-4';
         bouton.textContent = 'Pinging OFF';
         keepPinging();
       }
@@ -132,10 +153,10 @@
             //console.log(target + " : " + error.toString());
           }
           document.getElementById('img_reso' + index).src =
-            '../Assets/Images/off_icon.jpg';
+            '../Assets/Images/red_dot.svg';
         } else {
           document.getElementById('img_reso' + index).src =
-            '../Assets/Images/on_icon.jpg';
+            '../Assets/Images/green_dot.svg';
         }
       });
     }

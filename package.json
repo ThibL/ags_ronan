@@ -20,6 +20,7 @@
     "drivelist": "^8.0.10",
     "electron": "^6.1.0",
     "electron-is-dev": "^1.1.0",
+    "jquery": "^3.4.1",
     "net-ping": "^1.2.3",
     "ssh-exec": "^2.0.0",
     "ssh2-sftp-client": "^5.1.0"

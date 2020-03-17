@@ -26,7 +26,12 @@
   },
   {
     "ip": "127.0.0.1",
-    "nom": "aaaa",
+    "nom": "Ronan",
     "type": "Serveur"
+  },
+  {
+    "ip": "124.3.4.5",
+    "nom": "test",
+    "type": "PCS"
   }
 ]
