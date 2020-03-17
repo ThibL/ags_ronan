@@ -1,0 +1,32 @@
+[
+  {
+    "ip": "192.168.1.27",
+    "nom": "VM perso Host Only",
+    "type": "PCS"
+  },
+  {
+    "ip": "10.7.168.17",
+    "nom": "VM AGS Test",
+    "type": "Serveur"
+  },
+  {
+    "ip": "192.101.254.11",
+    "nom": "INTEG_GT_SRV_01",
+    "type": "BSP"
+  },
+  {
+    "ip": "192.168.1.19",
+    "nom": "VM perso NAT",
+    "type": "Serveur"
+  },
+  {
+    "ip": "10.5.73.80",
+    "nom": "AGS VM Dont touch",
+    "type": "Serveur"
+  },
+  {
+    "ip": "127.0.0.1",
+    "nom": "aaaa",
+    "type": "Serveur"
+  }
+]

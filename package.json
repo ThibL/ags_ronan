@@ -1,0 +1,30 @@
+{
+  "name": "ags-deploy",
+  "version": "1.0.0",
+  "description": "Outil déploiement automatique pour AGS",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "AGS",
+    "Déploiement",
+    "Electron",
+    "JS"
+  ],
+  "author": "Ronan PERRIER",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "drivelist": "^8.0.10",
+    "electron": "^6.1.0",
+    "electron-is-dev": "^1.1.0",
+    "net-ping": "^1.2.3",
+    "ssh-exec": "^2.0.0",
+    "ssh2-sftp-client": "^5.1.0"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^1.10.0"
+  }
+}

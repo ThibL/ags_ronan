@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <title>Déploiement version</title>
+</head>
+<body>
+    <h1 class="text-center">Fenêtre de suivi de déploiement</h1>
+
+    <div id="listeUSB" class='my-4'>
+       
+    </div>
+
+    <div class="my-3 mx-2">
+        <h6> Liste des actions : </h6>
+        <ul id="deployAction" style='list-style: none'></ul>
+    </div>
+
+    <div id="mdpInput" class='my-5 mx-2'>
+        <form class='mx-2'>
+            <label for='psswrd'>Mot de passe : </label>
+            <input name='psswrd' id='psswrd' type="password" class='form-control w-75 mx-auto' required><br>
+            <button type="submit" class="btn btn-primary my-2 mx-5"> Valider </button>
+        </form>
+    </div>
+
+    <button class='btn btn-dark' onclick="testFunction()">Test SFTP</button>
+
+</body>
+<script> 
+    /************************************************     CONSTANTES ET VARIABLES   *********************************************/ 
+    const electron= require('electron');
+    const {ipcRenderer, shell} = electron;
+    const drivelist = require('drivelist');
+    const listPing=require("../Data/ip_data.json");
+    const fs=require('fs');
+    var path=require('path');
+    var Promise = require("bluebird");
+    var listeMachineSelect=[];
+    var divAction=document.getElementById('deployAction');
+    const Client= require("ssh2-sftp-client");
+    const sftp=new Client();
+    const exec=require("ssh-exec");
+    const form= document.querySelector('form');
+    form.addEventListener('submit',submitForm);
+    var isLibClient=false;
+    var isLibServeur=false;
+    var isParamPCS=false;
+    var isParamBSP=false;
+    const libPath='/appli/AGS/comp'
+
+    /************************************************    INITIALISATION DE LA PAGE   *********************************************/
+    // Récupération des USB montées sur la machine
+    var listeUSB=[];
+    async function getDrive(){
+        return await drivelist.list();
+    }
+    getDrive().then(result=>{
+        // Récupération des Path Montables
+        result.forEach(element => {
+            // Affichage uniquement des USB
+            if(element.isUSB){   
+                // Nom de la clef  
+                var descriptionDevice=element.description;       
+                element.mountpoints.forEach(truc=>{
+                item=(descriptionDevice+ " (" + truc.path+ ")");
+                listeUSB.push(item);
+                });
+            }
+        });
+        afficherListeUsb(listeUSB);
+    })
+    
+    // Affiche la liste des clefs USB disponible
+    function afficherListeUsb(liste){
+        if(liste.length==0){
+            document.getElementById("listeUSB").innerHTML="<ul  style='list-style: none'><li class='text-danger'><b> Aucune clef USB trouvée !</b></li> </ul>"
+        }
+        else{
+            var usbSelect = document.createElement("select");
+            usbSelect.name='usbKey';
+            usbSelect.id="usbSelect";
+            usbSelect.classList="form-control w-75 mx-auto";
+            usbSelect.addEventListener('change',selectChange)
+            document.getElementById("listeUSB").appendChild(usbSelect);
+            
+            var optionDefault = document.createElement("option");
+            optionDefault.text=" ----- Sélectionner la Clef USB pour le déploiement ----- "
+            optionDefault.value='';
+            usbSelect.appendChild(optionDefault);
+            for(i=0;i<liste.length;i++){
+                var option= document.createElement("option");
+                option.value=listeUSB[i];
+                option.text=listeUSB[i];
+                usbSelect.appendChild(option);
+            } 
+        }
+    }
+
+    // Recupération de la liste des machines séléctionnées à l'ouverture de la fenêtre
+    var listeCheck;
+    ipcRenderer.on('checkedList:send',function(e,liste){
+        for(element in liste){
+            listeMachineSelect.push(listPing[liste[element]]);
+        }
+    })
+
+
+    /*********************************************************    FONCTIONS   *****************************************************/
+    // Lecture de la clef USB sur onChange du Select
+    function selectChange(){
+        var selecteur=document.getElementById("usbSelect");
+        if(selecteur.value!=''){
+            var pathUSB=selecteur.value.split('(').pop().split(')')[0];
+            var findSomething=false;
+            var resultAffichage='';
+            findFile(pathUSB,/lib_Client/,function(filename){
+                findSomething=true;
+                resultAffichage+="<li> Déploiement d'une librairie Client </li>";
+                isLibClient=true;
+            });
+            findFile(pathUSB,/lib_Serveur/,function(filename){
+                findSomething=true;
+                resultAffichage+="<li> Déploiement d'une librairie Serveur </li>";
+                isLibServeur=true;
+            })
+
+            findFile(pathUSB,/ressources.xml$/,function(filename){
+                findSomething=true;
+                if(filename.includes("AGSPCS")){
+                    resultAffichage+="<li> Déploiement de paramétrage PCS </li>";
+                    isParamPCS=true;
+                }
+                if(filename.includes("AGSBSP")){
+                    resultAffichage+="<li> Déploiement de paramétrage BSP </li>";
+                    isParamBSP=true;
+                }
+            })
+
+            if(findSomething==true){
+                divAction.innerHTML=resultAffichage;
+            }
+            else{
+                divAction.innerHTML="<li class='text-danger'><b> Aucun fichier de déploiement trouvé </b></li>";
+            }
+        }
+        else{
+            divAction.innerHTML='';
+        }
+    }
+
+    // Fonction de recherche de fichiers
+    function findFile(startPath,filter,callback){
+        if (!fs.existsSync(startPath)){
+            console.log("no dir ",startPath);
+            return;
+        }
+
+        var files=fs.readdirSync(startPath);
+
+        for(var i=0;i<files.length;i++){
+            var filename=path.join(startPath,files[i]);
+            var stat = fs.lstatSync(filename);
+            if (stat.isDirectory()){
+                findFile(filename,filter,callback); //Recursif
+            }
+
+            else if (filter.test(filename)) callback(filename);
+        };
+    }
+
+    function submitForm(e){
+        e.preventDefault();
+        var password=document.getElementById('psswrd').value;
+        console.log("Password entré : " + password)
+        /* Promise.mapSeries(listeMachineSelect,function(machineSelectionnee,index,arrayLength){
+            deployLib(password,machineSelectionnee)
+            .then(()=>{
+                return machineSelectionnee +" déploiement fini !";
+            })
+        }) */
+
+        const forLoop= async _ =>{
+            console.log("Début du deploy");
+
+            for(i=0;i<listeMachineSelect.length;i++){
+                const response=await deployLib(password,listeMachineSelect[i])
+                .then(response =>{
+                    console.log("Réponse",response)
+                })
+                
+            }
+
+            console.log("Fin du deploy")
+        }
+
+        forLoop();
+
+    }
+
+    // Fonction de déploiement
+    function deployLib(motDePasse,machineInfo){
+        return new Promise(function(resolve,reject){
+            console.log(machineInfo.ip)
+            sftp.connect({
+                host:machineInfo.ip,
+                port:'22',
+                username:'root',
+                password: motDePasse,
+                readyTimeout: 10000
+            }).then(() => {
+                // Connexion réussie : Lecture du dossier Lib
+                console.log("Connexion réussie")
+                return sftp.list(libPath)
+                    .then((response)=>{
+                    if(response==''){
+                        //Aucun dossier trouvé (Soucis)
+                        console.log("Aucun dossier trouvé")
+                    }
+                    else{
+                        // Chercher le dossier Lib
+                        var libDirExist;
+                        for(i=0;i<response.length;i++){
+                            // Lib existe
+                            if(response[i].name=="lib"){
+                                return sftp.rename(libPath+"/lib",libPath+"/lib_ratp")
+                                .then(()=>{
+                                    console.log("Renommage réussi");
+                                    sftp.end();
+                                    resolve('resolved')
+                                    //return Promise.resolve('Réussi')
+                                })
+                                .catch(err=>{
+                                    return("Renommage râté sur la machine : "+ machineInfo.nom)
+                                    sftp.end();
+                                })
+                            }
+                            // Lib n'existe pas
+                            else{
+
+                            }
+                        }
+                    }
+                })
+                .catch(err=>{
+                    console.log("Lecture du dossier "+libPath+" impossible");
+                    sftp.end()
+                });
+            })
+            .catch(err=>{
+            console.log("Connexion impossible sur la machine :"+ machineInfo.nom);
+            resolve('Erreur')
+            })
+        })
+    }
+
+    // Bac à sable
+    function testFunction(){
+        console.log("Début du test")
+        sftp.connect({host:'192.168.1.26',port:'22',username:'root',password:'steria'
+        }).then(() => {
+            // Lecture du dossier Lib
+            return sftp.list('/root/Bureau/Test');
+        })
+        .then((data)=>{
+            if(data==''){
+                console.log("Dossier vide");
+                var contenu=fs.createReadStream("E:\\Intervention plateforme\\appli\\AGS\\comp\\lib\\lib_Client_Merge6.7.tar.gz")
+                contenu.on('error', function(){
+                    console.log("Le fichier à transférer n'a pas pu être lu");
+                    sftp.end()
+                });
+                return sftp.put(contenu,'/root/Bureau/Test/lib_Client_Merge6.7.tar.gz',{
+                    flags: 'w',  // w - write and a - append
+                    encoding: null, // use null for binary files
+                    mode: 0o666, // mode to use for created file (rwx)
+                    autoClose: true // automatically close the write stream when finished
+                    }
+                ).then(()=>{
+                    console.log('Transfert réussi !');
+                    exec('tar -xvzf /root/Bureau/Test/lib_Client_Merge6.7.tar.gz -C /root/Bureau/Test/', {
+                        user: 'root',
+                        host: '192.168.1.26',
+                        password: 'steria'
+                    }).pipe(process.stdout)
+                })
+                .catch(err=>{
+                    console.log("Echec du transfert", err)
+                });
+            }
+            else{
+                for(i=0;i<data.length;i++){
+                    console.log(data[i]);
+                }
+            }
+            // Deconnexion STFP
+            return sftp.end();
+        })
+        .catch(err=>{
+            console.log("Connexion impossible : \n",err)
+        })
+    }
+
+</script>
+</html>
