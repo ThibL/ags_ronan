@@ -1,6 +1,6 @@
 [
   {
-    "ip": "192.168.1.27",
+    "ip": "127.0.0.3",
     "nom": "VM perso Host Only",
     "type": "PCS"
   },
@@ -15,7 +15,7 @@
     "type": "BSP"
   },
   {
-    "ip": "192.168.1.19",
+    "ip": "127.0.0.4",
     "nom": "VM perso NAT",
     "type": "Serveur"
   },
@@ -25,13 +25,13 @@
     "type": "Serveur"
   },
   {
-    "ip": "127.0.0.1",
+    "ip": "127.0.0.2",
     "nom": "Ronan",
     "type": "Serveur"
   },
   {
-    "ip": "124.3.4.5",
-    "nom": "test",
-    "type": "PCS"
+    "ip": "127.0.0.1",
+    "nom": "localhost",
+    "type": "Serveur"
   }
 ]

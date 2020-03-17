@@ -1,85 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" />
-    
     <title>Liste des machines</title>
 </head>
+
 <body>
-    <div>
-        <h1 class="text-center">Liste des machines</h1>
+    <div class="container mt-5">
+        <div class="card">
+            <h1 class="text-center card-header mb-4">Liste des machines</h1>
+            <form class="text-center mb-4">
+                <ul style="list-style: none" id="listMachine"></ul>
+                <button type='button' onclick='addInput()' class='btn btn-lg btn-success mx-2'>Ajouter une
+                    machine</button>
+                <input type='submit' value="Enregistrer" class='btn btn-lg btn-primary mx-2'>
+            </form>
+        </div>
+
     </div>
-    <form>
-        <ul style="list-style: none" id="listMachine"></ul>
-    
-
-    <button type='button' onclick='addInput()' class='btn btn-success mx-2'>Ajouter une machine</button>
-    <br><br><br>
-    <input type='submit' value="Modifier" class='btn btn-primary mx-2'></form>
-
-    
 </body>
 <script>
-    /************************************************     CONSTANTES ET VARIABLES   *********************************************/ 
-    const electron= require('electron');
-    const {ipcRenderer} = electron;
-    const listPing=require("../Data/ip_data.json")
-    const listeMachine=document.getElementById("listMachine")
-    const form= document.querySelector('form');
-    form.addEventListener('submit',submitForm);
-    var countLI=0;
+    /************************************************     CONSTANTES ET VARIABLES   *********************************************/
+    const electron = require('electron');
+    const {
+        ipcRenderer
+    } = electron;
+    const listPing = require("../Data/ip_data.json")
+    const listeMachine = document.getElementById("listMachine")
+    const form = document.querySelector('form');
+    form.addEventListener('submit', submitForm);
+    var countLI = 0;
 
     /*******************************************************     AFFICHAGE   ****************************************************/
     // Affichage des machines
     listPing.forEach(ip => {
         // TODO : Do not repeat yourself
-        if(ip.type=="Serveur"){
-        listeMachine.innerHTML+=("<li id='"+countLI+"'>\
+        if (ip.type == "Serveur") {
+            listeMachine.innerHTML += ("<li id='" + countLI + "'>\
             <img src='../Assets/Images/pc_icon.png' alt='icon' widdth='20' height='20'>\
-            <input type='text' name='nom' value='"+[ip.nom]+"'>\
+            <input type='text' name='nom' value='" + [ip.nom] +
+                "'>\
              ------- \
-            <input type='text' pattern='\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b' title='Adresse IP' name='ip' value='"+ip.ip+"'>\
+            <input type='text' pattern='\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b' title='Adresse IP' name='ip' value='" +
+                ip.ip + "'>\
             <select id='TypeMachine'>\
                 <option value='Serveur' selected >Serveur</option>\
                 <option value='PCS'>PCS</option>\
                 <option value='BSP'>BSP</option>\
             </select>\
             </li><br>");
-        }
-        else if(ip.type=="PCS"){
-            listeMachine.innerHTML+=("<li id='"+countLI+"'>\
+        } else if (ip.type == "PCS") {
+            listeMachine.innerHTML += ("<li id='" + countLI + "'>\
             <img src='../Assets/Images/pc_icon.png' alt='icon' widdth='20' height='20'>\
-            <input type='text' name='nom' value='"+[ip.nom]+"'>\
+            <input type='text' name='nom' value='" + [ip.nom] +
+                "'>\
              ------- \
-            <input type='text' pattern='\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b' title='Adresse IP' name='ip' value='"+ip.ip+"'>\
+            <input type='text' pattern='\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b' title='Adresse IP' name='ip' value='" +
+                ip.ip + "'>\
             <select id='TypeMachine'>\
                 <option value='Serveur'>Serveur</option>\
                 <option value='PCS' selected >PCS</option>\
                 <option value='BSP'>BSP</option>\
             </select>\
             </li><br>");
-        }
-        else if(ip.type=="BSP"){
-            listeMachine.innerHTML+=("<li id='"+countLI+"'>\
+        } else if (ip.type == "BSP") {
+            listeMachine.innerHTML += ("<li id='" + countLI + "'>\
             <img src='../Assets/Images/pc_icon.png' alt='icon' widdth='20' height='20'>\
-            <input type='text' name='nom' value='"+[ip.nom]+"'>\
+            <input type='text' name='nom' value='" + [ip.nom] +
+                "'>\
              ------- \
-            <input type='text' pattern='\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b' title='Adresse IP' name='ip' value='"+ip.ip+"'>\
+            <input type='text' pattern='\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b' title='Adresse IP' name='ip' value='" +
+                ip.ip + "'>\
             <select id='TypeMachine'>\
                 <option value='Serveur'>Serveur</option>\
                 <option value='PCS'>PCS</option>\
                 <option value='BSP' selected >BSP</option>\
             </select>\
             </li><br>");
-        }
-        else{
-            listeMachine.innerHTML+=("<li id='"+countLI+"'>\
+        } else {
+            listeMachine.innerHTML += ("<li id='" + countLI + "'>\
             <img src='../Assets/Images/pc_icon.png' alt='icon' widdth='20' height='20'>\
-            <input type='text' name='nom' value='"+[ip.nom]+"'>\
+            <input type='text' name='nom' value='" + [ip.nom] +
+                "'>\
              ------- \
-            <input type='text' pattern='\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b' title='Adresse IP' name='ip' value='"+ip.ip+"'>\
+            <input type='text' pattern='\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b' title='Adresse IP' name='ip' value='" +
+                ip.ip + "'>\
             <select id='TypeMachine'>\
                 <option value='notDefined'> ????</option>\
                 <option value='Serveur'>Serveur</option>\
@@ -93,14 +101,14 @@
 
     /*******************************************************     FONCTIONS   ****************************************************/
     // Action sur le click du bouton valider
-    function submitForm(e){
+    function submitForm(e) {
         e.preventDefault();
-        ipcRenderer.send('modif:valider',toJSONString(this));
+        ipcRenderer.send('modif:valider', toJSONString(this));
     }
 
     // Action sur le bouton Ajouter une machine
-    function addInput(){
-        listeMachine.innerHTML+=("<li id='"+countLI+"'>\
+    function addInput() {
+        listeMachine.innerHTML += ("<li id='" + countLI + "'>\
             <img src='../Assets/Images/pc_icon.png' alt='icon' widdth='20' height='20'>\
             <input type='text' placeholder='Nom de la Machine' value=''>\
              ------- \
@@ -115,31 +123,31 @@
     }
 
     // Traitement des Input pour avoir un JSON
-    function toJSONString(form){
-            var obj=[];
+    function toJSONString(form) {
+        var obj = [];
 
-            var elements=form.querySelectorAll("input,select");
-            for(i=0;i<elements.length;i++){
-                // Pour chaque Input Impair (IP)
-                if(i%3==1){
-                    var elementValue=elements[i].value;
-                    var elementAssociateValue=elements[i-1].value;
-                    var elementTypeValue=elements[i+1].value;
-                    
-                    if(elementValue!=='' && elementAssociateValue!==''){
-                        item={                            
-                            "ip":elementValue,
-                            "nom":elementAssociateValue,
-                            "type":elementTypeValue       
-                        }
-                        obj.push(item)
+        var elements = form.querySelectorAll("input,select");
+        for (i = 0; i < elements.length; i++) {
+            // Pour chaque Input Impair (IP)
+            if (i % 3 == 1) {
+                var elementValue = elements[i].value;
+                var elementAssociateValue = elements[i - 1].value;
+                var elementTypeValue = elements[i + 1].value;
+
+                if (elementValue !== '' && elementAssociateValue !== '') {
+                    item = {
+                        "ip": elementValue,
+                        "nom": elementAssociateValue,
+                        "type": elementTypeValue
                     }
-                    
+                    obj.push(item)
                 }
+
             }
-            
+        }
+
         return obj;
     }
-
 </script>
+
 </html>

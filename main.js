@@ -4,11 +4,18 @@ const electron = require('electron');
 const url = require('url');
 const path = require('path');
 const fs = require('fs');
-const listPingPath = '../Data/ip_data.json';
+const listPingPath = './Data/ip_data.json';
 const listPing = require(listPingPath);
-const { ipcMain } = require('electron');
+const {
+  ipcMain
+} = require('electron');
 const isDev = require('electron-is-dev');
-const { app, BrowserWindow, Menu, dialog } = electron;
+const {
+  app,
+  BrowserWindow,
+  Menu,
+  dialog
+} = electron;
 
 let mainWindow;
 let modifyWindow;
@@ -16,7 +23,7 @@ let loadWindow;
 
 /**************************************************     CREATION DES FENETRES   **********************************************/
 // Fenêtre principale
-app.on('ready', function() {
+app.on('ready', function () {
   // Fenetre principale
   mainWindow = new BrowserWindow({
     webPreferences: {
@@ -35,12 +42,12 @@ app.on('ready', function() {
   );
 
   // N'afficher la fenêtre que lorsqu'elle est fini de charger
-  mainWindow.once('ready-to-show', function() {
+  mainWindow.once('ready-to-show', function () {
     mainWindow.show();
   });
 
   // Quitter l'appli quand la fenetre principale est fermée
-  mainWindow.on('closed', function() {
+  mainWindow.on('closed', function () {
     app.quit();
   });
 
@@ -73,7 +80,7 @@ function createModifyWindow() {
   // Inserer le menu
   modifyWindow.setMenu(modifyMenu);
 
-  modifyWindow.once('ready-to-show', function() {
+  modifyWindow.once('ready-to-show', function () {
     modifyWindow.show();
   });
 }
@@ -100,7 +107,7 @@ function createLoadWindow(liste) {
   // Inserer le menu
   loadWindow.setMenu(loadMenu);
 
-  loadWindow.once('ready-to-show', function() {
+  loadWindow.once('ready-to-show', function () {
     loadWindow.show();
     loadWindow.webContents.send('checkedList:send', liste);
   });
@@ -108,66 +115,54 @@ function createLoadWindow(liste) {
 
 /**************************************************    GESTION  DES MENUS  ****************************************************/
 // Template menu fenêtre principale
-const mainMenuTemplate = [
-  {
-    label: 'Menu',
-    submenu: [
-      {
-        label: 'Modifier IP',
-        accelerator: process.platform == 'darwin' ? 'Command+N' : 'Ctrl+N',
-        click() {
-          createModifyWindow();
-        }
-      },
-      {
-        label: 'Quitter',
-        accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Ctrl+Q',
-        click() {
-          app.quit();
-        }
+const mainMenuTemplate = [{
+  label: 'Menu',
+  submenu: [{
+      label: 'Modifier IP',
+      accelerator: process.platform == 'darwin' ? 'Command+N' : 'Ctrl+N',
+      click() {
+        createModifyWindow();
       }
-    ]
-  }
-];
+    },
+    {
+      label: 'Quitter',
+      accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Ctrl+Q',
+      click() {
+        app.quit();
+      }
+    }
+  ]
+}];
 
 // Template menu fenêtre de modification IP
-const modifyMenuTemplate = [
-  {
-    label: 'Menu',
-    submenu: [
-      {
-        label: 'Fermer la fenêtre',
-        accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Ctrl+Q',
-        click() {
-          modifyWindow.close();
-        }
-      }
-    ]
-  }
-];
+const modifyMenuTemplate = [{
+  label: 'Menu',
+  submenu: [{
+    label: 'Fermer la fenêtre',
+    accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Ctrl+Q',
+    click() {
+      modifyWindow.close();
+    }
+  }]
+}];
 
 // Template menu fenêtre de déploiement
-const loadMenuTemplate = [
-  {
-    label: 'Menu',
-    submenu: [
-      {
-        label: 'Fermer la fenêtre',
-        accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Ctrl+Q',
-        click() {
-          loadWindow.close();
-        }
-      }
-    ]
-  }
-];
+const loadMenuTemplate = [{
+  label: 'Menu',
+  submenu: [{
+    label: 'Fermer la fenêtre',
+    accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Ctrl+Q',
+    click() {
+      loadWindow.close();
+    }
+  }]
+}];
 
 // Dev Tools
 if (isDev) {
   mainMenuTemplate.push({
     label: 'Developer Tools',
-    submenu: [
-      {
+    submenu: [{
         label: 'Toggle DevTools',
         accelerator: process.platform == 'darwin' ? 'Command+I' : 'Ctrl+I',
         click(item, focusedWindow) {
@@ -188,8 +183,7 @@ if (isDev) {
   });
   modifyMenuTemplate.push({
     label: 'Developer Tools',
-    submenu: [
-      {
+    submenu: [{
         label: 'Toggle DevTools',
         accelerator: process.platform == 'darwin' ? 'Command+I' : 'Ctrl+I',
         click(item, focusedWindow) {
@@ -210,8 +204,7 @@ if (isDev) {
   });
   loadMenuTemplate.push({
     label: 'Developer Tools',
-    submenu: [
-      {
+    submenu: [{
         label: 'Toggle DevTools',
         accelerator: process.platform == 'darwin' ? 'Command+I' : 'Ctrl+I',
         click(item, focusedWindow) {
@@ -234,7 +227,7 @@ if (isDev) {
 
 /***************************************************    GESTION DES IPC RENDERER **********************************************/
 // Validation de la modification de la liste IP
-ipcMain.on('modif:valider', function(e, json) {
+ipcMain.on('modif:valider', function (e, json) {
   console.log(json);
   fs.writeFile(listPingPath, JSON.stringify(json, null, 2), err => {
     if (err) console.log(err);
@@ -243,6 +236,6 @@ ipcMain.on('modif:valider', function(e, json) {
   modifyWindow.close();
 });
 
-ipcMain.on('action:deploy', function(e, indexChecked) {
+ipcMain.on('action:deploy', function (e, indexChecked) {
   createLoadWindow(indexChecked);
 });
